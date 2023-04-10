@@ -1,9 +1,6 @@
-# Welcome to your CDK TypeScript Construct Library project
+# steam-instance-cdk
 
-You should explore the contents of this project. It demonstrates a CDK Construct Library that includes a construct (`SteamInstanceCdk`)
-which contains an Amazon SQS queue that is subscribed to an Amazon SNS topic.
-
-The construct defines an interface (`SteamInstanceCdkProps`) to configure the visibility timeout of the queue.
+A CDK construct to simplify deploying dedicated servers managed with the [Steam Console Client](https://developer.valvesoftware.com/wiki/SteamCMD) (or SteamCMD).
 
 ## Useful commands
 
