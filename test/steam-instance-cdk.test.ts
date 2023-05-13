@@ -27,6 +27,7 @@ test('EC2 Instance Created', () => {
        SecurityGroupEgress: [{CidrIp: "0.0.0.0/0", "IpProtocol": "-1"}],
    });
 
+   // TODO: test the init script
    /*
    template.hasResourceProperties('AWS::EC2::Instance', {
        UserData: {
