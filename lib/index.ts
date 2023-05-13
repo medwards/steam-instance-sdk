@@ -18,13 +18,16 @@ export class SteamInstance extends Construct {
 
         // Launch script
         var launchScript = ec2.UserData.forLinux({shebang: "#!/bin/bash"});
+        // need to determine if it is AL2 or Ubuntu (or just force Ubuntu)
         launchScript.addCommands(
             'yum -y update',
-            'yum -y install lib32gcc1 libstdc++ libstdc++.i686',
+            'yum -y install libstdc++ libstdc++64.i686 glibc.i686',
+            // sudo apt-get install lib32gcc-s1
             'mkdir /opt/steamcmd',
             'cd /opt/steamcmd',
             // Download and install
             'curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxvf -',
+            // on ubuntu need to fix permissions for some reason here
             // Runs updater
             './steamcmd.sh +quit',
             // Schedule updates
@@ -44,14 +47,17 @@ export class SteamInstance extends Construct {
                 // TODO: Move this out of UserData to something that isn't critical to instance startup
             }
             launchScript.addCommands('cd /opt/steamcmd',
-                // login
-                './steamcmd.sh +login anonymous',
                 // set install dir
                 // TODO
                 // install (TODO: use beta info)
-                `./steamcmd.sh +app_update ${app.appId} validate`
+                `./steamcmd.sh +force_install_dir ./apps +login anonymous +app_update ${app.appId} validate +quit`
             );
         }
+
+        launchScript.addCommands('cd /opt/steamcmd',
+            // Fix ownership
+            'chown -R ec2-user:ec2-user /opt/steamcmd'
+        );
 
         // Launch the EC2 instance
         const instance = new ec2.Instance(this, 'MyInstance', {
