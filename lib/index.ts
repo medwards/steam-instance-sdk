@@ -8,6 +8,8 @@ export interface SteamAppProps {
     betaPassword?: string;
 }
 
+// Only vpc, vpcSubnets, instanceType, machineImage, and keyName are honoured
+// TODO: pass all the fields to instance launch - handle manipulated fields (security groups, userdata)
 export interface SteamInstanceProps extends ec2.InstanceProps {
     steamApps: SteamAppProps[];
 }
@@ -61,7 +63,9 @@ export class SteamInstance extends Construct {
 
         // Launch the EC2 instance
         const instance = new ec2.Instance(this, 'MyInstance', {
+            blockDevices: props.blockDevices,
             vpc: props.vpc,
+            vpcSubnets: props.vpcSubnets,
             securityGroup: sg,
             instanceType: props.instanceType || ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
             machineImage: props.machineImage || new ec2.AmazonLinuxImage(),
