@@ -46,6 +46,7 @@ export class SteamInstance extends Construct {
         for (const app of props.steamApps) {
             for (const port of app.ports) {
                 sg.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(port));
+                sg.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.udp(port));
                 // TODO: Move this out of UserData to something that isn't critical to instance startup
             }
             launchScript.addCommands('cd /opt/steamcmd',
