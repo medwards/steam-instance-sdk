@@ -1,7 +1,8 @@
 import * as cdk from 'aws-cdk-lib';
-import { Template } from 'aws-cdk-lib/assertions';
+import { Match, Template } from 'aws-cdk-lib/assertions';
 import { SteamInstance } from '../lib/index';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import {Fn} from 'aws-cdk-lib';
 
 // example test. To run these tests, uncomment this file along with the
 // example resource in lib/index.ts
@@ -23,27 +24,25 @@ test('EC2 Instance Created', () => {
    const template = Template.fromStack(stack);
 
    template.hasResourceProperties('AWS::EC2::SecurityGroup', {
-       SecurityGroupIngress: [{ToPort: 22}, {ToPort: 2456}, {ToPort: 2458}],
+       SecurityGroupIngress: [{ToPort: 22}, {ToPort: 2456, IpProtocol: 'tcp'}, {ToPort: 2456, IpProtocol: 'udp'}, {ToPort: 2458, IpProtocol: 'tcp'}, {ToPort: 2458, IpProtocol: 'udp'}],
        SecurityGroupEgress: [{CidrIp: "0.0.0.0/0", "IpProtocol": "-1"}],
    });
 
-   // TODO: test the init script
-   /*
-   template.hasResourceProperties('AWS::EC2::Instance', {
-       UserData: {
-           'Fn::Base64': `#!/bin/bash
-yum -y update
-yum -y install lib32gcc1 libstdc++ libstdc++.i686
+   console.log(template.findResources('AWS::EC2::Instance'));
+
+   const expectedScript = `#!/bin/bash
+apt update && apt upgrade --yes
+apt install lib32gcc-s1
 mkdir /opt/steamcmd
 cd /opt/steamcmd
-curl -sqL \"https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz\" | tar zxvf -
+curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxvf -
 ./steamcmd.sh +quit
-(crontab -l 2>/dev/null; echo \"0 0 * * 0 /opt/steamcmd/steamcmd.sh +quit\") | crontab -
+(crontab -l 2>/dev/null; echo "0 0 * * 0 /opt/steamcmd/steamcmd.sh +quit") | crontab -
 cd /opt/steamcmd
-./steamcmd.sh +login anonymous
-./steamcmd.sh +app_update 896660 validate
-`
-       }
+./steamcmd.sh +force_install_dir ./apps +login anonymous +app_update 896660 validate +quit
+chown -R ubuntu:ubuntu /opt/steamcmd`;
+
+   template.hasResourceProperties('AWS::EC2::Instance', {
+       "UserData": {"Fn::Base64": expectedScript }
    });
-  */
 });
